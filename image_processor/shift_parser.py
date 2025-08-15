@@ -12,10 +12,10 @@ class ShiftParser:
     def __init__(self):
         pass
 
-    def parse_data_to_shifts(raw_data_path: str) -> list[Shift]:
+    def parse_data_to_shifts(result_dir: str) -> list[Shift]:
         """画像から抽出されたデータを使ってシフトデータを作成するメソッド
         Args:
-            raw_data_path (str): 画像から抽出されたデータのパス
+            result_dir (str):画像や抽出結果ファイルを格納するディレクトリへのパス
         Returns:
             list[Shift]: シフトデータ
         """

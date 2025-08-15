@@ -10,3 +10,5 @@ result/*
 parameters.json
 .python-version
 .DS_Store
+.env
+data/
