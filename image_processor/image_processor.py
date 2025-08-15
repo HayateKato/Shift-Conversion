@@ -15,10 +15,10 @@ class ImageProcessor:
     def __init__(self):
         pass
 
-    def process_image(image_path: str) -> list[Shift]:
+    def process_image(result_dir: str) -> list[Shift]:
         """画像処理とシフトデータの作成を行うメソッド
         Args:
-            image_path (str): 処理を行う画像ファイルのパス
+            result_dir (str):画像や抽出結果ファイルを格納するディレクトリへのパス
         Returns:
             list[Shift]: シフトデータ
         """
