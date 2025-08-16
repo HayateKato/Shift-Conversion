@@ -1,7 +1,7 @@
-"""Slackとアプリケーション間のやり取りを行うモジュール
-"""
+"""Slackとアプリケーション間のやり取りを行うモジュール"""
 
 from dotenv import load_dotenv
+
 load_dotenv()
 import os
 import requests
@@ -24,6 +24,7 @@ class SlackClient:
         _app (:obj:`Slack_bolt.app.app.App`)
         _controller (:obj:`Controller`): Controllerクラスのオブジェクト
     """
+
     def __init__(self, controller: Controller):
         self._bot_token = os.getenv("SLACK_USER_OAUTH_TOKEN")
         self._user_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
@@ -42,6 +43,7 @@ class SlackClient:
         Notes:
             doctest対象外
         """
+
         @self.app.event({"type": "message", "subtype": "file_share"})
         def _handle_event(self, event: dict) -> None:
             """Slack上に画像が投稿されると実行されるメソッド
@@ -53,7 +55,7 @@ class SlackClient:
             Notes:
                 doctest対象外
             """
-            pass
+            self._process_file_share_event(event)
 
     def _process_file_share_event(self, event: dict) -> None:
         """Slack上に投稿された画像の情報をFileオブジェクトに変換してControllerクラスに渡すメソッド
@@ -103,10 +105,18 @@ class SlackClient:
             >>> assert called_file_obj.private_url == "https://files.slack.com/files-pri/T061EG9R6-F0RDC39U1/ghostrap.png"
             >>> assert called_file_obj.channel_id == "D0L4B9P0Q"
             >>> assert called_file_obj.timestamp == "1529342088.000086"
-            >>> print("Test passed")
-            Test passed
+            [In slack_client.py] Complete _process_file_share_event
         """
-        pass
+        file_obj = File(
+            id=event["files"][0]["id"],
+            name=["files"][0]["name"],
+            private_url=["files"][0]["url_private"],
+            channel_id=["channel"],
+            timestamp=["event_ts"],
+        )
+        self._controller.handle_file_share_event(file_obj)
+
+        print("[In slack_client.py] Complete _process_file_share_event\n")
 
     def listen_for_events(self) -> None:
         """Slackにおけるイベントの発生を検知するメソッド
@@ -119,7 +129,6 @@ class SlackClient:
         """
         handler = SocketModeHandler(self._app, self._socket_token)
         handler.start()
-
 
     def download_image(self, private_url: str, result_dir: str) -> None:
         """画像をローカルにダウンロードするメソッド
@@ -169,10 +178,18 @@ class SlackClient:
             >>> mock_file.assert_any_call(f"{test_result_dir}/test.jpg", "wb")
             >>> file_handle = mock_file()
             >>> file_handle.write.assert_called_once_with(b"dummy image data")
-            >>> print("Test passed")
-            Test passed
+            [In slack_client.py] Complete download_image
         """
-        pass
+        img_data = requests.get(
+            url=private_url,
+            allow_redirects=True,
+            headers={"Authorization": f"Bearer {self._user_token}"},
+            stream=True,
+        ).content
+        with open(f"{result_dir}/shift.jpg", "wb") as f:
+            f.write(img_data)
+
+        print("[In slack_client.py] Complete download_image\n")
 
     def post_processing_message(self, file: File) -> str:
         """ローカルへの画像のダウンロードの完了とシフト変換の開始を通知するメソッド
@@ -213,12 +230,20 @@ class SlackClient:
             >>>
             >>> # 正しい引数で呼ばれたかを確認 (channel, thread_ts, text)
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
-            >>> print("Test passed")
-            Test passed
+            [In slack_client.py] Complete post_processing_message
         """
-        pass
+        channel = file.channel_id
+        timestamp = file.timestamp
+        text = "画像のダウンロードが完了しました。\\n 処理中です..."
+        response = self._app.client.chat_postMessage(
+            channel=channel, thread_ts=timestamp, text=text
+        )
 
-    def post_result(self, file: File, shift: list[Shift]) -> None:
+        print("[In slack_client.py] Complete post_processing_message\n")
+
+        return response["ts"]
+
+    def post_result(self, file: File, shifts: list[Shift]) -> None:
         """作成されたシフトデータをSlackに送信するメソッド
         Args:
             file (:obj:`File`): Slackにおける元ファイルの情報
@@ -255,16 +280,26 @@ class SlackClient:
             >>> mock_post.assert_called_once()
             >>>
             >>> # 意図した通りのメッセージが生成されたかを確認
-            >>> expected_text = "シフト情報\\n- バイト: 4/2 17:00〜21:30\\n- バイト: 4/4 17:00〜21:00"
+            >>> expected_text = "シフト情報\\n- 2025-04-02T17:00:00+09:00 ~ 2025-04-02T21:30:00+09:00\\n- 2025-04-04T17:00:00+09:00 ~ 2025-04-04T21:00:00+09:00"
             >>>
             >>> # 正しい引数で呼ばれたかを確認 (channel, thread_ts, text)
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
-            >>> print("Test passed")
-            Test passed
+            [In slack_client.py] Complete post_result
         """
-        pass
+        channel = file.channel_id
+        timestamp = file.timestamp
+        result_text = "シフト情報"
+        for shift in shifts:
+            tmp = "\\n- " + shift.start_datetime + " ~ " + shift.end_datetime
+            result_text += tmp
+        response = self._app.client.chat_postMessage(
+            channel=channel, thread_ts=timestamp, text=result_text
+        )
+
+        print("[In slack_client.py] Complete post_result\n")
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
