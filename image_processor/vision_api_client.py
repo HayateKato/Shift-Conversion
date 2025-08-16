@@ -1,5 +1,4 @@
-"""Vision APIとアプリケーション間のやり取りを行うモジュール
-"""
+"""Vision APIとアプリケーション間のやり取りを行うモジュール"""
 
 from google.cloud import vision
 from unittest.mock import MagicMock, patch
@@ -11,6 +10,7 @@ class VisionAPIClient:
         _api_key (str): Vision APIを利用するための鍵のパス
         _client (:obj:`google.cloud.vision_v1.ImageAnnotatorClient`)
     """
+
     def __init__(self):
         pass
 
@@ -45,6 +45,7 @@ class VisionAPIClient:
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
