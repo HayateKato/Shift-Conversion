@@ -29,7 +29,7 @@ class SlackClient:
         self._bot_token = os.getenv("SLACK_USER_OAUTH_TOKEN")
         self._user_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
         self._socket_token = os.getenv("SLACK_SOKET_TOKEN")
-        self._app = App(self._bot_token)
+        self._app = App(token=self._bot_token)
         self._controller = controller
         self._regist_handlers()
 
@@ -44,7 +44,7 @@ class SlackClient:
             doctest対象外
         """
 
-        @self.app.event({"type": "message", "subtype": "file_share"})
+        @self._app.event({"type": "message", "subtype": "file_share"})
         def _handle_event(self, event: dict) -> None:
             """Slack上に画像が投稿されると実行されるメソッド
             _process_file_share_eventメソッドを呼び出す
@@ -75,7 +75,7 @@ class SlackClient:
             ...     "files": [{
             ...         "id": "F0RDC39U1",
             ...         "name": "ghostrap.png",
-            ...         "url_private_download": "https://files.slack.com/files-pri/T061EG9R6-F0RDC39U1/ghostrap.png"
+            ...         "url_private": "https://files.slack.com/files-pri/T061EG9R6-F0RDC39U1/ghostrap.png"
             ...     }],
             ...     "channel": "D0L4B9P0Q",
             ...     "event_ts": "1529342088.000086"
@@ -84,7 +84,7 @@ class SlackClient:
             >>> # --- 2. 外部依存をモック化してテストを実行 ---
             >>> # `os.getenv` と `App` をモック化して、__init__がエラーにならないようにする
             >>> with patch('os.getenv', return_value='dummy-token'):
-            ...     with patch('slack_bolt.App') as MockApp:
+            ...     with patch('__main__.App') as MockApp:
             ...         # --- モックの設定 ---
             ...         mock_app_instance = MockApp.return_value    # self._app == mock_app_instanceとなるようにする
             ...
@@ -105,18 +105,15 @@ class SlackClient:
             >>> assert called_file_obj.private_url == "https://files.slack.com/files-pri/T061EG9R6-F0RDC39U1/ghostrap.png"
             >>> assert called_file_obj.channel_id == "D0L4B9P0Q"
             >>> assert called_file_obj.timestamp == "1529342088.000086"
-            [In slack_client.py] Complete _process_file_share_event
         """
         file_obj = File(
             id=event["files"][0]["id"],
-            name=["files"][0]["name"],
-            private_url=["files"][0]["url_private"],
-            channel_id=["channel"],
-            timestamp=["event_ts"],
+            name=event["files"][0]["name"],
+            private_url=event["files"][0]["url_private"],
+            channel_id=event["channel"],
+            timestamp=event["event_ts"],
         )
         self._controller.handle_file_share_event(file_obj)
-
-        print("[In slack_client.py] Complete _process_file_share_event\n")
 
     def listen_for_events(self) -> None:
         """Slackにおけるイベントの発生を検知するメソッド
@@ -151,11 +148,11 @@ class SlackClient:
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
             >>> with patch("os.getenv", return_value="dummy-token"):
             ...     # `App` の初期化をモック化
-            ...     with patch("slack_bolt.App") as MockApp:
+            ...     with patch("__main__.App") as MockApp:
             ...         # `requests.get`をモック化
             ...         with patch("requests.get") as mock_get:
             ...             # `builtins.open`をモック化
-            ...             with patch.object("builtins.open", mock_open()) as mock_file:
+            ...             with patch("builtins.open", mock_open()) as mock_file:
             ...                 # --- モックの設定 ---
             ...                 mock_app_instance = MockApp.return_value    # self._app == mock_app_instanceとなるようにする
             ...                 mock_response = MagicMock()
@@ -174,11 +171,10 @@ class SlackClient:
             >>> # 正しい引数で呼ばれたかを確認
             >>> mock_get.assert_called_with(url=test_private_url, allow_redirects=True, headers={"Authorization": f"Bearer {test_user_token}"}, stream=True)
             >>>
-            >>> # 正しいファイル処理が行われようとしたか
-            >>> mock_file.assert_any_call(f"{test_result_dir}/test.jpg", "wb")
+            >>> # 正しいファイル処理が行われようとしたか確認
+            >>> mock_file.assert_any_call(f"{test_result_dir}/shift.jpg", "wb")
             >>> file_handle = mock_file()
             >>> file_handle.write.assert_called_once_with(b"dummy image data")
-            [In slack_client.py] Complete download_image
         """
         img_data = requests.get(
             url=private_url,
@@ -188,8 +184,6 @@ class SlackClient:
         ).content
         with open(f"{result_dir}/shift.jpg", "wb") as f:
             f.write(img_data)
-
-        print("[In slack_client.py] Complete download_image\n")
 
     def post_processing_message(self, file: File) -> str:
         """ローカルへの画像のダウンロードの完了とシフト変換の開始を通知するメソッド
@@ -211,7 +205,7 @@ class SlackClient:
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
             >>> with patch("os.getenv", return_value="dummy-token"):
             ...     # `App` の初期化をモック化
-            ...     with patch("slack_bolt.App") as MockApp:
+            ...     with patch("__main__.App") as MockApp:
             ...         # --- モックの設定 ---
             ...         # Appインスタンスが持つclientのchat_postMessageをモック化
             ...         mock_app_instance = MockApp.return_value    # self._app == mock_app_instanceとなるようにする
@@ -219,27 +213,22 @@ class SlackClient:
             ...
             ...         # --- テスト対象の実行 ---
             ...         test_client = SlackClient(controller=mock_controller)
-            ...         test_client.post_processing_message(test_file)
+            ...         _ = test_client.post_processing_message(test_file)
             ...
             >>> # --- 3. 結果の検証 ---
             >>> # 1回だけ呼ばれたことを確認
             >>> mock_post.assert_called_once()
             >>>
-            >>> # 意図した通りのメッセージが送信されたかを確認
+            >>> # 正しい引数で呼ばれたかを確認
             >>> expected_text = "画像のダウンロードが完了しました。\\n 処理中です..."
-            >>>
-            >>> # 正しい引数で呼ばれたかを確認 (channel, thread_ts, text)
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
-            [In slack_client.py] Complete post_processing_message
         """
         channel = file.channel_id
         timestamp = file.timestamp
-        text = "画像のダウンロードが完了しました。\\n 処理中です..."
+        text = "画像のダウンロードが完了しました。\n 処理中です..."
         response = self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=text
         )
-
-        print("[In slack_client.py] Complete post_processing_message\n")
 
         return response["ts"]
 
@@ -265,7 +254,7 @@ class SlackClient:
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
             >>> with patch("os.getenv", return_value="dummy-token"):
             ...     # `App` の初期化をモック化
-            ...     with patch("slack_bolt.App") as MockApp:
+            ...     with patch("__main__.App") as MockApp:
             ...         # --- モックの設定 ---
             ...         # Appインスタンスが持つclientのchat_postMessageをモック化
             ...         mock_app_instance = MockApp.return_value    # self._app == mock_app_instanceとなるようにする
@@ -282,21 +271,18 @@ class SlackClient:
             >>> # 意図した通りのメッセージが生成されたかを確認
             >>> expected_text = "シフト情報\\n- 2025-04-02T17:00:00+09:00 ~ 2025-04-02T21:30:00+09:00\\n- 2025-04-04T17:00:00+09:00 ~ 2025-04-04T21:00:00+09:00"
             >>>
-            >>> # 正しい引数で呼ばれたかを確認 (channel, thread_ts, text)
+            >>> # 正しい引数で呼ばれたかを確認
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
-            [In slack_client.py] Complete post_result
         """
         channel = file.channel_id
         timestamp = file.timestamp
         result_text = "シフト情報"
         for shift in shifts:
-            tmp = "\\n- " + shift.start_datetime + " ~ " + shift.end_datetime
+            tmp = "\n- " + shift.start_datetime + " ~ " + shift.end_datetime
             result_text += tmp
-        response = self._app.client.chat_postMessage(
+        self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=result_text
         )
-
-        print("[In slack_client.py] Complete post_result\n")
 
 
 if __name__ == "__main__":
