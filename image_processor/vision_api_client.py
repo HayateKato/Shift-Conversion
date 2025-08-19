@@ -1,7 +1,11 @@
-"""Vision APIとアプリケーション間のやり取りを行うモジュール
-"""
+"""Vision APIとアプリケーション間のやり取りを行うモジュール"""
 
+from dotenv import load_dotenv
+
+load_dotenv()
+import os
 from google.cloud import vision
+import json
 from unittest.mock import MagicMock, patch
 
 
@@ -9,10 +13,12 @@ class VisionAPIClient:
     """Vision APIを使って画像からデータを抽出するクラス
     Attributes:
         _api_key (str): Vision APIを利用するための鍵のパス
-        _client (:obj:`google.cloud.vision_v1.ImageAnnotatorClient`)
+        _client (:obj:`google.cloud.vision_v1.ImageAnnotatorClient`): Vision APIクライアント
     """
+
     def __init__(self):
-        pass
+        self._api_key = os.getenv("VISION_API_KEY_PATH")
+        self._client = vision.ImageAnnotatorClient()
 
     def extract_data_from_image(self, result_dir: str) -> None:
         """画像からデータを抽出するメソッド
@@ -21,30 +27,66 @@ class VisionAPIClient:
         Returns:
             None
         Examples:
-            >>> from google.cloud import vision
+            >>> # --- 1. テスト準備 ---
             >>> from unittest.mock import patch, MagicMock, mock_open
-            >>> test_result_dir = "../result/dummy"
-            >>> mock_response = MagicMock()
-            >>> mock_response_dict = {"fullTextAnnotation": {"text": "抽出されたテキスト"}}
-            >>> with patch("vision.ImageAnnotatorClient") as MockClient:
-            ...     with patch("vision.Image") as MockImage:
-            ...         with patch.object("builtins.open", mock_open()) as mock_file:
-            ...             with patch("json.dump") as mock_json_dump:
-            ...                 test_client = VisionAPIClient()
-            ...                 AnnotateImageResponse.to_dict = MagicMock(return_value=mock_response_dict)
-            ...                 test_client.extract_data_from_image(test_result_dir)
-            >>> mock_file.assert_any_call(f"{test_result_dir}/test.jpg", "rb")
-            >>> mock_client_instance.document_text_detection.assert_called_once_with(test_result_dir)
-            >>> mock_file.assert_any_call(f"{test_result_dir}/test_response.json", "w", encoding="utf-8")
-            >>> file_handle = mock_file()
-            >>> mock_json_dump.assert_called_once_with(mock_response_dict, file_handle, ensure_ascii=False, indent=2)
-            >>> file_handle.write.assert_any_call(mock_response_dict)
-            >>> print("Test passed")
-            Test passed
+            >>>
+            >>> # --- 2. ダミーやモックの設定 ---
+            >>> test_result_dir = "result/dummy"
+            >>> mock_image_content = b"dummy image data"
+            >>> # MessageToDictが返す辞書データ
+            >>> mock_response_dict = {"text_annotations": [{"description": "test"}]}
+            >>>
+            >>> # --- 3. 外部依存をモック化してテストを実行 ---
+            >>> with patch('os.getenv', return_value='dummy-key-path'), \\
+            ...      patch("google.cloud.vision.ImageAnnotatorClient") as MockClient, \\
+            ...      patch("google.cloud.vision.Image") as MockImage, \\
+            ...      patch("google.cloud.vision.AnnotateImageResponse") as MockResponse, \\
+            ...      patch("builtins.open", mock_open(read_data=mock_image_content)) as mock_file, \\
+            ...      patch("json.dump") as mock_json_dump:
+            ...     # --- モックのインスタンスと返り値を設定 ---
+            ...     mock_api_response = MagicMock() # Vision APIからのレスポンスを模したMagicMockオブジェクト
+            ...     mock_client_instance = MockClient.return_value  # self._client == mock_client_instanceとなるようにする
+            ...     mock_client_instance.document_text_detection.return_value = mock_api_response
+            ...     mock_image_instance = MockImage.return_value    # image == mock_image_instanceとなるようにする
+            ...     MockResponse.to_dict.return_value = mock_response_dict
+            ...
+            ...     # --- 4. テスト対象の実行 ---
+            ...     test_client = VisionAPIClient()
+            ...     test_client.extract_data_from_image(test_result_dir)
+            ...
+            >>> # --- 5. 結果の検証 ---
+            >>> # 画像ファイルが正しく読み込まれたか
+            >>> mock_file.assert_any_call(f"{test_result_dir}/shift.jpg", "rb")
+            >>>
+            >>> # vision.Imageオブジェクトが正しい内容で作成されたか
+            >>> MockImage.assert_called_once_with(content=mock_image_content)
+            >>>
+            >>> # document_text_detectionが正しい引数で呼び出されたか
+            >>> mock_client_instance.document_text_detection.assert_called_once_with(image=mock_image_instance)
+            >>>
+            >>> # APIレスポンスが辞書に変換されたか
+            >>> MockResponse.to_dict.assert_called_once_with(mock_api_response)
+            >>>
+            >>> # JSONファイルが正しく書き込まれたか
+            >>> mock_file.assert_any_call(f"{test_result_dir}/response.json", "w", encoding="utf-8")
+            >>> write_handle = mock_file()
+            >>> mock_json_dump.assert_called_with(mock_response_dict, write_handle, ensure_ascii=False, indent=2)
         """
-        pass
+        with open(f"{result_dir}/shift.jpg", "rb") as f:
+            content = f.read()
+        image = vision.Image(content=content)
+
+        response = self._client.document_text_detection(image=image)
+
+        # Vision APIからのレスポンスを辞書型に変換
+        response_dict = vision.AnnotateImageResponse.to_dict(
+            response
+        )
+        with open(f"{result_dir}/response.json", "w", encoding="utf-8") as f:
+            json.dump(response_dict, f, ensure_ascii=False, indent=2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
