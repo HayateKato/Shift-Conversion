@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 from google.cloud import vision
+import json
 from unittest.mock import MagicMock, patch
 
 
@@ -55,7 +56,7 @@ class VisionAPIClient:
             ...
             >>> # --- 5. 結果の検証 ---
             >>> # 画像ファイルが正しく読み込まれたか
-            >>> mock_file.assert_any_call(f"{result_dir}/shift.jpg", "rb")
+            >>> mock_file.assert_any_call(f"{test_result_dir}/shift.jpg", "rb")
             >>>
             >>> # vision.Imageオブジェクトが正しい内容で作成されたか
             >>> MockImage.assert_called_once_with(content=mock_image_content)
@@ -67,11 +68,22 @@ class VisionAPIClient:
             >>> MockResponse.to_dict.assert_called_once_with(mock_api_response)
             >>>
             >>> # JSONファイルが正しく書き込まれたか
-            >>> mock_file.assert_any_call(f"{result_dir}/response.json", "w", encoding="utf-8")
+            >>> mock_file.assert_any_call(f"{test_result_dir}/response.json", "w", encoding="utf-8")
             >>> write_handle = mock_file()
             >>> mock_json_dump.assert_called_with(mock_response_dict, write_handle, ensure_ascii=False, indent=2)
         """
-        pass
+        with open(f"{result_dir}/shift.jpg", "rb") as f:
+            content = f.read()
+        image = vision.Image(content=content)
+
+        response = self._client.document_text_detection(image=image)
+
+        # Vision APIからのレスポンスを辞書型に変換
+        response_dict = vision.AnnotateImageResponse.to_dict(
+            response
+        )
+        with open(f"{result_dir}/response.json", "w", encoding="utf-8") as f:
+            json.dump(response_dict, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
