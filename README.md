@@ -61,7 +61,7 @@ python main.py -h
 ├── image_processor           # 画像処理ファイルを格納するディレクトリ
 │   │── image_processor.py    # 画像からシフトデータを作成
 │   │── shift_parser.py       # 画像処理後のデータをShiftオブジェクトに変換
-│   └── vision_api_client.py  # 画像処理を実施
+│   └── vision_client.py      # 画像処理を実施
 ├── config.py                 # パラメータ定義
 ├── main.py                   # 実行ファイル
 ├── parameters.json           # パラメータ指定用ファイル
