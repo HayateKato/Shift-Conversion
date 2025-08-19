@@ -12,3 +12,4 @@ parameters.json
 .DS_Store
 .env
 data/
+api_key/
