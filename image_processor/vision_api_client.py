@@ -36,25 +36,22 @@ class VisionAPIClient:
             >>> mock_response_dict = {"text_annotations": [{"description": "test"}]}
             >>>
             >>> # --- 3. 外部依存をモック化してテストを実行 ---
-            >>> with patch('os.getenv', return_value='dummy-key-path'):
-            ...     # google.cloud.visionモジュール内のクラスや関数を個別にモック化
-            ...     with patch("google.cloud.vision.ImageAnnotatorClient") as MockClient,
-            ...          with patch("google.cloud.vision.Image") as MockImage,
-            ...             with patch("google.cloud.vision.AnnotateImageResponse", return_value=mock_response_dict) as MockResponse,
-            ...                 with patch("builtins.open", mock_open(read_data=mock_image_content)) as mock_file,
-            ...                     with patch("json.dump") as mock_json_dump:
+            >>> with patch('os.getenv', return_value='dummy-key-path'), \\
+            ...      patch("google.cloud.vision.ImageAnnotatorClient") as MockClient, \\
+            ...      patch("google.cloud.vision.Image") as MockImage, \\
+            ...      patch("google.cloud.vision.AnnotateImageResponse") as MockResponse, \\
+            ...      patch("builtins.open", mock_open(read_data=mock_image_content)) as mock_file, \\
+            ...      patch("json.dump") as mock_json_dump:
+            ...     # --- モックのインスタンスと返り値を設定 ---
+            ...     mock_api_response = MagicMock() # Vision APIからのレスポンスを模したMagicMockオブジェクト
+            ...     mock_client_instance = MockClient.return_value  # self._client == mock_client_instanceとなるようにする
+            ...     mock_client_instance.document_text_detection.return_value = mock_api_response
+            ...     mock_image_instance = MockImage.return_value    # image == mock_image_instanceとなるようにする
+            ...     MockResponse.to_dict.return_value = mock_response_dict
             ...
-            ...                         # --- モックのインスタンスと返り値を設定 ---
-            ...                         # Vision APIからのレスポンスを模したMagicMockオブジェクト
-            ...                         mock_api_response = MagicMock()
-            ...                         mock_client_instance = MockClient.return_value  # self._client == mock_client_instanceとなるようにする
-            ...                         mock_client_instance.document_text_detection.return_value = mock_api_response
-            ...                         mock_image_instance = MockImage.return_value    # image == mock_image_instanceとなるようにする
-            ...                         MockResponse.to_dict.return_value = mock_response_dict
-            ...
-            ...                         # --- 4. テスト対象の実行 ---
-            ...                         test_client = VisionAPIClient()
-            ...                         test_client.extract_data_from_image(test_result_dir)
+            ...     # --- 4. テスト対象の実行 ---
+            ...     test_client = VisionAPIClient()
+            ...     test_client.extract_data_from_image(test_result_dir)
             ...
             >>> # --- 5. 結果の検証 ---
             >>> # 画像ファイルが正しく読み込まれたか
