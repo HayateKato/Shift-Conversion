@@ -9,7 +9,7 @@ import json
 from unittest.mock import MagicMock, patch
 
 
-class VisionAPIClient:
+class VisionClient:
     """Vision APIを使って画像からデータを抽出するクラス
     Attributes:
         _api_key (str): Vision APIを利用するための鍵のパス
@@ -51,7 +51,7 @@ class VisionAPIClient:
             ...     MockResponse.to_dict.return_value = mock_response_dict
             ...
             ...     # --- 4. テスト対象の実行 ---
-            ...     test_client = VisionAPIClient()
+            ...     test_client = VisionClient()
             ...     test_client.extract_data_from_image(test_result_dir)
             ...
             >>> # --- 5. 結果の検証 ---
