@@ -1,9 +1,8 @@
-"""画像処理とシフトデータの作成を行うモジュール
-"""
+"""画像処理とシフトデータの作成を行うモジュール"""
 
 from image_processor.vision_client import VisionClient
 from shift_parser import ShiftParser
-from ..dataclass.shift import Shift
+from dataclass.shift import Shift
 
 
 class ImageProcessor:
@@ -12,6 +11,7 @@ class ImageProcessor:
         vision_client (:obj:`VisionClient`): Vision APIにおける処理を行うオブジェクト
         shift_parser (:obj:`ShiftParser`): 画像から抽出されたデータをシフトデータに変換するオブジェクト
     """
+
     def __init__(self):
         pass
 
