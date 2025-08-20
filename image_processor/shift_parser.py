@@ -498,6 +498,13 @@ class ShiftParser:
             start_time = rc[1].split(":")  # 時と分に分ける
             end_time = rc[2].split(":")
 
+            # 時間が3桁になっている場合は2桁にする(例:117->17)
+            if len(start_time[0]) >= 3:
+                start_time[0] = start_time[0][1:]
+
+            if len(end_time[0]) >= 3:
+                end_time[0] = end_time[0][1:]
+
             # yyyy-mm-ddThh:mm:ss+hh:mm:ssの形式にする
             start_datetime = datetime(
                 year=year,
