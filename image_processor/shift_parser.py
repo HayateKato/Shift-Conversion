@@ -25,379 +25,480 @@ class ShiftParser:
         Returns:
             list[Shift]: シフトデータ
         Examples:
-            >>> from unittest.mock import patch, MagicMock, mock_open
-            >>> from dataclass.shift import Shift
+            >>> # --- 1. テスト準備 ---
+            >>> from unittest.mock import patch, mock_open
             >>> import json
             >>>
-            >>> # ダミーを作成
+            >>> # --- 2. ダミーデータの設定 ---
             >>> test_result_dir = "result/dummy"
-            >>> mock_json = {
-            >>>     "text_annotations": [
-            >>>         {
-            >>>             "locale": "zh",
-            >>>             "description": "8/1\n金\n17時00分\n21時30分",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 32,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 749,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 749,
-            >>>                         "y": 2058
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 32,
-            >>>                         "y": 2058
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "8/1",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 35,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 82,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 82,
-            >>>                         "y": 49
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 35,
-            >>>                         "y": 49
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "金",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 216,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 247,
-            >>>                         "y": 23
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 247,
-            >>>                         "y": 49
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 216,
-            >>>                         "y": 49
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "17",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 453,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 485,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 485,
-            >>>                         "y": 52
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 453,
-            >>>                         "y": 52
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "時",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 485,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 512,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 512,
-            >>>                         "y": 52
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 485,
-            >>>                         "y": 52
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "00",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 516,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 549,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 549,
-            >>>                         "y": 52
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 516,
-            >>>                         "y": 52
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "分",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 552,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 580,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 580,
-            >>>                         "y": 52
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 552,
-            >>>                         "y": 52
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "21",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 620,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 652,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 652,
-            >>>                         "y": 52
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 620,
-            >>>                         "y": 52
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "時",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 655,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 681,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 681,
-            >>>                         "y": 51
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 655,
-            >>>                         "y": 51
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "30",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 685,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 718,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 718,
-            >>>                         "y": 51
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 685,
-            >>>                         "y": 51
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>         {
-            >>>             "description": "分",
-            >>>             "bounding_poly": {
-            >>>                 "vertices": [
-            >>>                     {
-            >>>                         "x": 721,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 749,
-            >>>                         "y": 26
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 749,
-            >>>                         "y": 51
-            >>>                     },
-            >>>                     {
-            >>>                         "x": 721,
-            >>>                         "y": 51
-            >>>                     }
-            >>>                 ],
-            >>>                 "normalized_vertices": []
-            >>>             },
-            >>>             "mid": "",
-            >>>             "locale": "",
-            >>>             "score": 0.0,
-            >>>             "confidence": 0.0,
-            >>>             "topicality": 0.0,
-            >>>             "locations": [],
-            >>>             "properties": []
-            >>>         },
-            >>>     ],
-            >>>     "full_text_annotation": {},
-            >>>     "face_annotations": [],
-            >>>     "landmark_annotations": [],
-            >>>     "logo_annotations": [],
-            >>>     "label_annotations": [],
-            >>>     "localized_object_annotations": []
-            >>> }
-            >>> mock_json_str = json.dumps(mock_json)
+            >>> # Vision APIのレスポンスを模したPython辞書
+            >>> mock_json_dict = {
+            ...   "full_text_annotation": {
+            ...     "pages": [
+            ...       {
+            ...         "blocks": [
+            ...           {
+            ...             "paragraphs": [
+            ...               {
+            ...                 "words": [
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 35,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 52,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 52,
+            ...                               "y": 49
+            ...                             },
+            ...                             {
+            ...                               "x": 35,
+            ...                               "y": 49
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "8"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 52,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 67,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 67,
+            ...                               "y": 49
+            ...                             },
+            ...                             {
+            ...                               "x": 52,
+            ...                               "y": 49
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "/"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 66,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 82,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 82,
+            ...                               "y": 49
+            ...                             },
+            ...                             {
+            ...                               "x": 66,
+            ...                               "y": 49
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "1"
+            ...                       }
+            ...                     ]
+            ...                   }
+            ...                 ]
+            ...               }
+            ...             ]
+            ...           },
+            ...           {
+            ...             "paragraphs": [
+            ...               {
+            ...                 "words": [
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 216,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 247,
+            ...                               "y": 23
+            ...                             },
+            ...                             {
+            ...                               "x": 247,
+            ...                               "y": 49
+            ...                             },
+            ...                             {
+            ...                               "x": 216,
+            ...                               "y": 49
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "金"
+            ...                       }
+            ...                     ]
+            ...                   }
+            ...                 ]
+            ...               }
+            ...             ]
+            ...           },
+            ...           {
+            ...             "paragraphs": [
+            ...               {
+            ...                 "words": [
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 453,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 467,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 467,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 453,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "1"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 469,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 485,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 485,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 469,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "7"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 485,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 512,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 512,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 485,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "時"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 516,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 531,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 531,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 516,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "0"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 533,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 549,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 549,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 533,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "0"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 552,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 580,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 580,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 552,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "分"
+            ...                       }
+            ...                     ]
+            ...                   }
+            ...                 ]
+            ...               }
+            ...             ]
+            ...           },
+            ...           {
+            ...             "paragraphs": [
+            ...               {
+            ...                 "words": [
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 620,
+            ...                               "y": 27
+            ...                             },
+            ...                             {
+            ...                               "x": 638,
+            ...                               "y": 27
+            ...                             },
+            ...                             {
+            ...                               "x": 638,
+            ...                               "y": 52
+            ...                             },
+            ...                             {
+            ...                               "x": 620,
+            ...                               "y": 52
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "2"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 639,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 652,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 652,
+            ...                               "y": 51
+            ...                             },
+            ...                             {
+            ...                               "x": 639,
+            ...                               "y": 51
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "1"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 655,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 681,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 681,
+            ...                               "y": 51
+            ...                             },
+            ...                             {
+            ...                               "x": 655,
+            ...                               "y": 51
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "時"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 685,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 700,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 700,
+            ...                               "y": 51
+            ...                             },
+            ...                             {
+            ...                               "x": 685,
+            ...                               "y": 51
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "3"
+            ...                       },
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 702,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 718,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 718,
+            ...                               "y": 51
+            ...                             },
+            ...                             {
+            ...                               "x": 702,
+            ...                               "y": 51
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "0"
+            ...                       }
+            ...                     ]
+            ...                   },
+            ...                   {
+            ...                     "symbols": [
+            ...                       {
+            ...                         "bounding_box": {
+            ...                           "vertices": [
+            ...                             {
+            ...                               "x": 721,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 749,
+            ...                               "y": 26
+            ...                             },
+            ...                             {
+            ...                               "x": 749,
+            ...                               "y": 51
+            ...                             },
+            ...                             {
+            ...                               "x": 721,
+            ...                               "y": 51
+            ...                             }
+            ...                           ]
+            ...                         },
+            ...                         "text": "分"
+            ...                       }
+            ...                     ]
+            ...                   }
+            ...                 ]
+            ...               }
+            ...             ]
+            ...           }
+            ...         ]
+            ...       }
+            ...     ]
+            ...   }
+            ... }
+            >>> # 辞書をJSON文字列に変換
+            >>> mock_json_str = json.dumps(mock_json_dict)
             >>>
-            >>> # 外部依存をモック化
+            >>> # --- 3. 外部依存をモック化してテストを実行 ---
             >>> with patch("builtins.open", mock_open(read_data=mock_json_str)) as mock_file:
-            >>>     # テスト対象の実行
             ...     test_shift_parser = ShiftParser()
-            ...     result_shift = test_shift_parser.parse_data_to_shifts(test_result_dir)
+            ...     result_shifts = test_shift_parser.parse_data_to_shifts(test_result_dir)
             ...
+            >>> # --- 4. 結果の検証 ---
             >>> # jsonファイルが正しく読み込まれたか
-            >>> mock_file.assert_any_call(f"{test_result_dir}/response.json", "r", encoding="utf-8)
+            >>> mock_file.assert_any_call(f"{test_result_dir}/response.json", "r", encoding="utf-8")
             >>>
             >>> # 返り値が正しいか
-            >>> result_shift
-            [Shift(summary="バイト", start_datetime="2025-08-01T17:00:00+09:00:00", end_datetime="2025-08-01T21:30:00+09:00:00", timezone="Asia/Tokyo")]
+            >>> result_shifts
+            [Shift(summary='バイト', start_datetime='2025-08-01T17:00:00+09:00:00', end_datetime='2025-08-01T21:30:00+09:00:00', timezone='Asia/Tokyo')]
         """
-        with open("response.json") as f:
+        with open(f"{result_dir}/response.json", "r", encoding="utf-8") as f:
             response = json.load(f)
 
         # response.jsonの中身から処理に必要な部分のみを取り出す
@@ -454,6 +555,8 @@ class ShiftParser:
                 current_line = [d]
             current_y = d["coordinate"][1]
 
+        line_context.append(current_line)   # 最後の行を追加
+
         # グループ化した行ごとにx座標の平均値で並べ替え
         sorted_line_context = list()
         for line in line_context:
@@ -472,7 +575,7 @@ class ShiftParser:
         # 誤字(Iや|)を除外
         cleaned_context = list()
         for rc in removed_context:
-            cleaned_rc = re.sub(r"[I|]", "", t)
+            cleaned_rc = re.sub(r"[I|]", "", rc)
             cleaned_context.append(cleaned_rc)
 
         # current_patternに一致する文字列をreplace_patternの形式に変換
