@@ -1,6 +1,11 @@
 """Googleカレンダーとアプリケーション間のやり取りを行うモジュール"""
 
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
 from dataclass.shift import Shift
+
+from unittest.mock import MagicMock, patch
 
 
 class CalendarClient:
