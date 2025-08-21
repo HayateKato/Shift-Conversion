@@ -1,5 +1,4 @@
-"""Googleカレンダーとアプリケーション間のやり取りを行うモジュール
-"""
+"""Googleカレンダーとアプリケーション間のやり取りを行うモジュール"""
 
 from dataclass.shift import Shift
 
@@ -10,6 +9,7 @@ class CalendarClient:
         _api_key (str): Googleカレンダーを利用するための鍵のパス
         _calendar_id (str): 対象GoogleカレンダーのID
     """
+
     def __init__(self):
         pass
 
