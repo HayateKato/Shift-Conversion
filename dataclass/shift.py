@@ -27,6 +27,14 @@ class Shift:
         Examples:
             >>> dummy_shift = Shift(summary="バイト", start_datetime="2025-04-02T17:00:00+09:00:00", end_datetime="2025-04-02T21:30:00+09:00:00", timezone="Asia/Tokyo")
             >>> dummy_shift.to_dict()
-            {"summary":"バイト", "start_datetime":"2025-04-02T17:00:00+09:00:00", "end_datetime":"2025-04-02T21:30:00+09:00:00", "timezone":"Asia/Tokyo"}
+            {'summary': 'バイト', 'start_datetime': '2025-04-02T17:00:00+09:00:00', 'end_datetime': '2025-04-02T21:30:00+09:00:00', 'timezone': 'Asia/Tokyo'}
         """
-        pass
+        shift_dict = {"summary": self.summary, "start_datetime": self.start_datetime, "end_datetime": self.end_datetime, "timezone": self.timezone}
+
+        return shift_dict
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
