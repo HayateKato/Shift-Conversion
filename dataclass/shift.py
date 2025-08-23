@@ -24,5 +24,9 @@ class Shift:
             None
         Returns:
             dict: 辞書型シフトデータ
+        Examples:
+            >>> dummy_shift = Shift(summary="バイト", start_datetime="2025-04-02T17:00:00+09:00:00", end_datetime="2025-04-02T21:30:00+09:00:00", timezone="Asia/Tokyo")
+            >>> dummy_shift.to_dict()
+            {"summary":"バイト", "start_datetime":"2025-04-02T17:00:00+09:00:00", "end_datetime":"2025-04-02T21:30:00+09:00:00", "timezone":"Asia/Tokyo"}
         """
         pass
