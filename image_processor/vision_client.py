@@ -1,13 +1,11 @@
 """Vision APIとアプリケーション間のやり取りを行うモジュール"""
 
 from dotenv import load_dotenv
-
-load_dotenv()
 import os
+load_dotenv("/Users/hayatekato/work/shift/.env")
 from google.cloud import vision
 import json
 from google.oauth2 import service_account
-import googleapiclient.discovery
 
 from unittest.mock import MagicMock, patch
 
@@ -21,7 +19,7 @@ class VisionClient:
     """
 
     def __init__(self):
-        self._api_key = os.getenv("GOOGlE_CLOUD_API_KEY_PATH")
+        self._api_key = os.getenv("GOOGLE_CLOUD_API_KEY_PATH")
         self._creds = service_account.Credentials.from_service_account_file(
             self._api_key
         )

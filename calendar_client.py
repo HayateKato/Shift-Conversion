@@ -1,9 +1,8 @@
 """Googleカレンダーとアプリケーション間のやり取りを行うモジュール"""
 
 from dotenv import load_dotenv
-
-load_dotenv()
 import os
+load_dotenv("/Users/hayatekato/work/shift/.env")
 from google.oauth2 import service_account
 import googleapiclient.discovery
 

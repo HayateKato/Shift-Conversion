@@ -41,5 +41,19 @@ class Controller:
         Notes:
             doctest対象外
         """
-        shifts = self._image_processor.process_image(self.result_dir)
-        self._calendar_client.create_events(shifts)
+        # Slackに投稿された画像をローカルにダウンロード
+        self._slack_client.download_image(
+            private_url=file.private_url, result_dir=self.result_dir
+        )
+
+        # 画像ダウンロードの完了，シフトデータ作成の開始をSlack上で通知
+        self._slack_client.post_processing_message(file=file)
+
+        # シフトデータを作成
+        shifts = self._image_processor.process_image(result_dir=self.result_dir)
+
+        # 作成したシフトデータをSlackに送信
+        self._slack_client.post_result(file=file, shifts=shifts)
+
+        # シフトデータを予定としてGoogleカレンダーに追加
+        self._calendar_client.create_events(shifts=shifts)

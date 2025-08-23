@@ -1,16 +1,20 @@
 """Slackとアプリケーション間のやり取りを行うモジュール"""
 
 from dotenv import load_dotenv
-
-load_dotenv()
 import os
+load_dotenv("/Users/hayatekato/work/shift/.env")
 import requests
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from dataclass.file import File
 from dataclass.shift import Shift
-from controller import Controller
+# typingからTYPE_CHECKINGをインポート
+from typing import TYPE_CHECKING
+
+# Controllerを直接インポートする代わりにTYPE_CHECKINGブロックの中でだけインポートする
+if TYPE_CHECKING:
+    from controller import Controller
 
 from unittest.mock import MagicMock, patch
 
@@ -25,7 +29,7 @@ class SlackClient:
         _controller (:obj:`Controller`): Controllerクラスのオブジェクト
     """
 
-    def __init__(self, controller: Controller):
+    def __init__(self, controller: "Controller"):
         self._bot_token = os.getenv("SLACK_USER_OAUTH_TOKEN")
         self._user_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
         self._socket_token = os.getenv("SLACK_SOKET_TOKEN")
@@ -45,7 +49,7 @@ class SlackClient:
         """
 
         @self._app.event({"type": "message", "subtype": "file_share"})
-        def _handle_event(self, event: dict) -> None:
+        def _handle_event(event: dict) -> None:
             """Slack上に画像が投稿されると実行されるメソッド
             _process_file_share_eventメソッドを呼び出す
             Args:
