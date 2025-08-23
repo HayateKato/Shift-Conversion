@@ -5,6 +5,8 @@ from utils import dump_params, setup_params
 from utils import set_logging
 import logging
 
+from controller import Controller
+
 
 def main() -> None:
 
@@ -33,6 +35,8 @@ def main() -> None:
     logger.info(params.args['arg1'])  # コマンドライン引数はargs['']でアクセス．
 
     # do something...
+    controller = Controller(result_dir=result_dir)
+    controller.run()
 
 
 if __name__ == "__main__":
