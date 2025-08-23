@@ -248,7 +248,7 @@ class SlackClient:
             >>> # テスト用のダミーを作成
             >>> mock_controller = MagicMock()
             >>> test_file = File(id="F111", name="test.jpg", private_url="http://slack/test", channel_id="C222", timestamp="1648825135.123")
-            >>> test_shifts = [Shift(summary="バイト", start_datetime="2025-04-02T17:00:00+09:00", end_datetime="2025-04-02T21:30:00+09:00", timezone="Asia/Tokyo"), Shift(summary="バイト", start_datetime="2025-04-04T17:00:00+09:00", end_datetime="2025-04-04T21:00:00+09:00", timezone="Asia/Tokyo")]
+            >>> test_shifts = [Shift(summary="バイト", start_datetime="2025-04-02T17:00:00+09:00:00", end_datetime="2025-04-02T21:30:00+09:00:00", timezone="Asia/Tokyo"), Shift(summary="バイト", start_datetime="2025-04-04T17:00:00+09:00:00", end_datetime="2025-04-04T21:00:00+09:00:00", timezone="Asia/Tokyo")]
             >>>
             >>> # --- 2. 外部依存をモック化してテストを実行 ---
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
@@ -269,7 +269,7 @@ class SlackClient:
             >>> mock_post.assert_called_once()
             >>>
             >>> # 意図した通りのメッセージが生成されたかを確認
-            >>> expected_text = "シフト情報\\n- 2025-04-02T17:00:00+09:00 ~ 2025-04-02T21:30:00+09:00\\n- 2025-04-04T17:00:00+09:00 ~ 2025-04-04T21:00:00+09:00"
+            >>> expected_text = "シフト情報\\n- 2025-04-02T17:00:00+09:00:00 ~ 2025-04-02T21:30:00+09:00:00\\n- 2025-04-04T17:00:00+09:00:00 ~ 2025-04-04T21:00:00+09:00:00"
             >>>
             >>> # 正しい引数で呼ばれたかを確認
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
