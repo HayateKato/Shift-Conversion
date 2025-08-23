@@ -6,6 +6,9 @@ load_dotenv()
 import os
 from google.cloud import vision
 import json
+from google.oauth2 import service_account
+import googleapiclient.discovery
+
 from unittest.mock import MagicMock, patch
 
 
@@ -13,12 +16,16 @@ class VisionClient:
     """Vision APIを使って画像からデータを抽出するクラス
     Attributes:
         _api_key (str): Vision APIを利用するための鍵のパス
-        _client (:obj:`google.cloud.vision_v1.ImageAnnotatorClient`): Vision APIクライアント
+        _creds (:obj:`google.oauth2.service_account.Credentials`): 認証情報
+        _client (:obj:`google.cloud.vision_v1.ImageAnnotatorClient`): Vision APIとのやりとりを担うオブジェクト
     """
 
     def __init__(self):
-        self._api_key = os.getenv("VISION_API_KEY_PATH")
-        self._client = vision.ImageAnnotatorClient()
+        self._api_key = os.getenv("GOOGlE_CLOUD_API_KEY_PATH")
+        self._creds = service_account.Credentials.from_service_account_file(
+            self._api_key
+        )
+        self._client = vision.ImageAnnotatorClient(credentials=self._creds)
 
     def extract_data_from_image(self, result_dir: str) -> None:
         """画像からデータを抽出するメソッド
@@ -33,11 +40,13 @@ class VisionClient:
             >>> # --- 2. ダミーやモックの設定 ---
             >>> test_result_dir = "result/dummy"
             >>> mock_image_content = b"dummy image data"
+            >>> dummy_key_path = "dummy/key.json"
             >>> # MessageToDictが返す辞書データ
             >>> mock_response_dict = {"text_annotations": [{"description": "test"}]}
             >>>
             >>> # --- 3. 外部依存をモック化してテストを実行 ---
-            >>> with patch('os.getenv', return_value='dummy-key-path'), \\
+            >>> with patch('os.getenv', return_value=dummy_key_path), \\
+            ...      patch("google.oauth2.service_account.Credentials.from_service_account_file") as mock_from_file, \\
             ...      patch("google.cloud.vision.ImageAnnotatorClient") as MockClient, \\
             ...      patch("google.cloud.vision.Image") as MockImage, \\
             ...      patch("google.cloud.vision.AnnotateImageResponse") as MockResponse, \\
@@ -55,6 +64,8 @@ class VisionClient:
             ...     test_client.extract_data_from_image(test_result_dir)
             ...
             >>> # --- 5. 結果の検証 ---
+            >>> mock_from_file.assert_called_once_with(dummy_key_path)
+            >>>
             >>> # 画像ファイルが正しく読み込まれたか
             >>> mock_file.assert_any_call(f"{test_result_dir}/shift.jpg", "rb")
             >>>
@@ -79,9 +90,7 @@ class VisionClient:
         response = self._client.document_text_detection(image=image)
 
         # Vision APIからのレスポンスを辞書型に変換
-        response_dict = vision.AnnotateImageResponse.to_dict(
-            response
-        )
+        response_dict = vision.AnnotateImageResponse.to_dict(response)
         with open(f"{result_dir}/response.json", "w", encoding="utf-8") as f:
             json.dump(response_dict, f, ensure_ascii=False, indent=2)
 
