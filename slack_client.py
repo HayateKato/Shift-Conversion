@@ -229,7 +229,7 @@ class SlackClient:
         """
         channel = file.channel_id
         timestamp = file.timestamp
-        text = "画像のダウンロードが完了しました。\n 処理中です..."
+        text = "画像のダウンロードが完了しました。\n処理中です．．．"
         response = self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=text
         )
@@ -291,7 +291,7 @@ class SlackClient:
         for shift in shifts:
             shift_dict = shift.to_dict()
             tmp = (
-                "\n- "
+                "\n・ "
                 + shift_dict["start_datetime"][:10]
                 + " "
                 + shift_dict["start_datetime"][11:16]
