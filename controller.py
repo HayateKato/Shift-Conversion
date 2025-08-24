@@ -64,14 +64,14 @@ class Controller:
         shifts = self._image_processor.process_image(result_dir=self.result_dir)
         logger.debug("シフトデータの作成が完了しました。")
 
-        # 作成したシフトデータをSlackに送信
-        logger.debug("Slackへのシフトデータの送信を開始しました。")
-        self._slack_client.post_result(file=file, shifts=shifts)
-        logger.debug("Slackへのシフトデータの送信が完了しました。")
-
         # シフトデータを予定としてGoogleカレンダーに追加
         logger.debug("Googleカレンダーへの予定の追加を開始しました。")
         self._calendar_client.create_events(shifts=shifts)
         logger.debug("Googleカレンダーへの予定の追加が完了しました。")
+
+        # 作成したシフトデータをSlackに送信
+        logger.debug("Slackへのシフトデータの送信を開始しました。")
+        self._slack_client.post_result(file=file, shifts=shifts)
+        logger.debug("Slackへのシフトデータの送信が完了しました。")
 
         logger.debug("バックグラウンド処理が完了しました。")
