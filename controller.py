@@ -1,5 +1,7 @@
 """アプリケーションを管理するモジュール"""
 
+import logging
+
 from dataclass.file import File
 from slack_client import SlackClient
 from image_processor.image_processor import ImageProcessor
@@ -41,19 +43,35 @@ class Controller:
         Notes:
             doctest対象外
         """
+        # ログの設定
+        logger = logging.getLogger("__main__").getChild("controller")
+        logger.debug("バックグラウンド処理を開始しました。")
+
         # Slackに投稿された画像をローカルにダウンロード
+        logger.debug("画像のダウンロードを開始しました。")
         self._slack_client.download_image(
             private_url=file.private_url, result_dir=self.result_dir
         )
+        logger.debug("画像のダウンロードが完了しました。")
 
         # 画像ダウンロードの完了，シフトデータ作成の開始をSlack上で通知
+        logger.debug("Slackへのメッセージ送信を開始しました。")
         self._slack_client.post_processing_message(file=file)
+        logger.debug("Slackへのメッセージ送信が完了しました。")
 
         # シフトデータを作成
+        logger.debug("シフトデータの作成を開始しました。")
         shifts = self._image_processor.process_image(result_dir=self.result_dir)
+        logger.debug("シフトデータの作成が完了しました。")
 
         # 作成したシフトデータをSlackに送信
+        logger.debug("Slackへのシフトデータの送信を開始しました。")
         self._slack_client.post_result(file=file, shifts=shifts)
+        logger.debug("Slackへのシフトデータの送信が完了しました。")
 
         # シフトデータを予定としてGoogleカレンダーに追加
+        logger.debug("Googleカレンダーへの予定の追加を開始しました。")
         self._calendar_client.create_events(shifts=shifts)
+        logger.debug("Googleカレンダーへの予定の追加が完了しました。")
+
+        logger.debug("バックグラウンド処理が完了しました。")
