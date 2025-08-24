@@ -287,7 +287,9 @@ class SlackClient:
         """
         channel = file.channel_id
         timestamp = file.timestamp
-        result_text = "シフト情報"
+        result_text = (
+            "以下のシフトをGoogleカレンダーに予定として追加しました。"
+        )
         for shift in shifts:
             shift_dict = shift.to_dict()
             tmp = (
@@ -301,6 +303,7 @@ class SlackClient:
                 + shift_dict["end_datetime"][11:16]
             )
             result_text += tmp
+
         self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=result_text
         )
