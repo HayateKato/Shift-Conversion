@@ -23,15 +23,13 @@ class SlackClient:
     """Slackとアプリケーション間のやり取りを行うクラス
     Attributes:
         _bot_token (str): Slack Botのトークン
-        _user_token (str): Slackユーザのトークン
         _socket_token (str): Slackのソケットモードを使うためのトークン
         _app (:obj:`Slack_bolt.app.app.App`)
         _controller (:obj:`Controller`): Controllerクラスのオブジェクト
     """
 
     def __init__(self, controller: "Controller"):
-        self._bot_token = os.getenv("SLACK_USER_OAUTH_TOKEN")
-        self._user_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
+        self._bot_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
         self._socket_token = os.getenv("SLACK_SOKET_TOKEN")
         self._app = App(token=self._bot_token)
         self._controller = controller
@@ -183,7 +181,7 @@ class SlackClient:
         img_data = requests.get(
             url=private_url,
             allow_redirects=True,
-            headers={"Authorization": f"Bearer {self._user_token}"},
+            headers={"Authorization": f"Bearer {self._bot_token}"},
             stream=True,
         ).content
         with open(f"{result_dir}/shift.jpg", "wb") as f:
