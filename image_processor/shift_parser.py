@@ -666,6 +666,10 @@ class ShiftParser:
             if len(end_time[0]) >= 3:
                 end_time[0] = end_time[0][1:]
 
+            # 開始時刻と終了時刻が00時00分になっている日はシフトデータに含めない
+            if start_time == ["00", "00"] and end_time == ["00", "00"]:
+                continue
+
             # yyyy-mm-ddThh:mm:ss+hh:mm:ssの形式にする
             start_datetime = datetime(
                 year=year,

@@ -1,16 +1,22 @@
 """Slackとアプリケーション間のやり取りを行うモジュール"""
 
 from dotenv import load_dotenv
-
-load_dotenv()
 import os
+
+load_dotenv("/Users/hayatekato/work/shift/.env")
 import requests
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from dataclass.file import File
 from dataclass.shift import Shift
-from controller import Controller
+
+# typingからTYPE_CHECKINGをインポート
+from typing import TYPE_CHECKING
+
+# Controllerを直接インポートする代わりにTYPE_CHECKINGブロックの中でだけインポートする
+if TYPE_CHECKING:
+    from controller import Controller
 
 from unittest.mock import MagicMock, patch
 
@@ -19,15 +25,13 @@ class SlackClient:
     """Slackとアプリケーション間のやり取りを行うクラス
     Attributes:
         _bot_token (str): Slack Botのトークン
-        _user_token (str): Slackユーザのトークン
         _socket_token (str): Slackのソケットモードを使うためのトークン
         _app (:obj:`Slack_bolt.app.app.App`)
         _controller (:obj:`Controller`): Controllerクラスのオブジェクト
     """
 
-    def __init__(self, controller: Controller):
-        self._bot_token = os.getenv("SLACK_USER_OAUTH_TOKEN")
-        self._user_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
+    def __init__(self, controller: "Controller"):
+        self._bot_token = os.getenv("SLACK_BOT_OAUTH_TOKEN")
         self._socket_token = os.getenv("SLACK_SOKET_TOKEN")
         self._app = App(token=self._bot_token)
         self._controller = controller
@@ -45,7 +49,7 @@ class SlackClient:
         """
 
         @self._app.event({"type": "message", "subtype": "file_share"})
-        def _handle_event(self, event: dict) -> None:
+        def _handle_event(event: dict) -> None:
             """Slack上に画像が投稿されると実行されるメソッド
             _process_file_share_eventメソッドを呼び出す
             Args:
@@ -142,11 +146,11 @@ class SlackClient:
             >>> mock_controller = MagicMock()
             >>> test_private_url = "http://slack/test"
             >>> test_result_dir = "result/dummy"
-            >>> test_user_token = "xxx"
+            >>> dummy_bot_token = "dummy-token"
             >>>
             >>> # --- 2. 外部依存をモック化してテストを実行 ---
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
-            >>> with patch("os.getenv", return_value="dummy-token"):
+            >>> with patch("os.getenv", return_value=dummy_bot_token):
             ...     # `App` の初期化をモック化
             ...     with patch("__main__.App") as MockApp:
             ...         # `requests.get`をモック化
@@ -161,7 +165,7 @@ class SlackClient:
             ...
             ...                 # --- テスト対象の実行 ---
             ...                 test_client = SlackClient(controller=mock_controller)
-            ...                 test_client._user_token = test_user_token
+            ...                 test_client._bot_token = dummy_bot_token
             ...                 test_client.download_image(test_private_url, test_result_dir)
             ...
             >>> # --- 3. 結果の検証 ---
@@ -169,7 +173,7 @@ class SlackClient:
             >>> mock_get.assert_called_once()
             >>>
             >>> # 正しい引数で呼ばれたかを確認
-            >>> mock_get.assert_called_with(url=test_private_url, allow_redirects=True, headers={"Authorization": f"Bearer {test_user_token}"}, stream=True)
+            >>> mock_get.assert_called_with(url=test_private_url, allow_redirects=True, headers={"Authorization": f"Bearer {dummy_bot_token}"}, stream=True)
             >>>
             >>> # 正しいファイル処理が行われようとしたか確認
             >>> mock_file.assert_any_call(f"{test_result_dir}/shift.jpg", "wb")
@@ -179,7 +183,7 @@ class SlackClient:
         img_data = requests.get(
             url=private_url,
             allow_redirects=True,
-            headers={"Authorization": f"Bearer {self._user_token}"},
+            headers={"Authorization": f"Bearer {self._bot_token}"},
             stream=True,
         ).content
         with open(f"{result_dir}/shift.jpg", "wb") as f:
@@ -225,7 +229,7 @@ class SlackClient:
         """
         channel = file.channel_id
         timestamp = file.timestamp
-        text = "画像のダウンロードが完了しました。\n 処理中です..."
+        text = "画像のダウンロードが完了しました。\n処理中です．．．"
         response = self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=text
         )
@@ -249,27 +253,34 @@ class SlackClient:
             >>> mock_controller = MagicMock()
             >>> test_file = File(id="F111", name="test.jpg", private_url="http://slack/test", channel_id="C222", timestamp="1648825135.123")
             >>> test_shifts = [Shift(summary="バイト", start_datetime="2025-04-02T17:00:00+09:00:00", end_datetime="2025-04-02T21:30:00+09:00:00", timezone="Asia/Tokyo"), Shift(summary="バイト", start_datetime="2025-04-04T17:00:00+09:00:00", end_datetime="2025-04-04T21:00:00+09:00:00", timezone="Asia/Tokyo")]
+            >>> dummy_shifts_dict = [
+            ...     {"summary":"バイト", "start_datetime":"2025-04-02T17:00:00+09:00:00", "end_datetime":"2025-04-02T21:30:00+09:00:00", "timezone":"Asia/Tokyo"},
+            ...     {"summary":"バイト", "start_datetime":"2025-04-04T17:00:00+09:00:00", "end_datetime":"2025-04-04T21:00:00+09:00:00", "timezone":"Asia/Tokyo"}
+            ... ]
             >>>
             >>> # --- 2. 外部依存をモック化してテストを実行 ---
             >>> # `os.getenv` をモック化して、__init__がエラーにならないようにする
-            >>> with patch("os.getenv", return_value="dummy-token"):
-            ...     # `App` の初期化をモック化
-            ...     with patch("__main__.App") as MockApp:
+            >>> with patch("os.getenv", return_value="dummy-token"), \\
+            ...      patch("__main__.App") as MockApp, \\
+            ...      patch("__main__.Shift.to_dict") as mock_to_dict:
             ...         # --- モックの設定 ---
             ...         # Appインスタンスが持つclientのchat_postMessageをモック化
             ...         mock_app_instance = MockApp.return_value    # self._app == mock_app_instanceとなるようにする
             ...         mock_post = mock_app_instance.client.chat_postMessage
+            ...         mock_to_dict.side_effect = dummy_shifts_dict
             ...
             ...         # --- テスト対象の実行 ---
             ...         test_client = SlackClient(controller=mock_controller)
             ...         test_client.post_result(test_file, test_shifts)
             ...
             >>> # --- 3. 結果の検証 ---
+            >>> assert mock_to_dict.call_count == 2
+            >>>
             >>> # 1回だけ呼ばれたことを確認
             >>> mock_post.assert_called_once()
             >>>
             >>> # 意図した通りのメッセージが生成されたかを確認
-            >>> expected_text = "シフト情報\\n- 2025-04-02T17:00:00+09:00:00 ~ 2025-04-02T21:30:00+09:00:00\\n- 2025-04-04T17:00:00+09:00:00 ~ 2025-04-04T21:00:00+09:00:00"
+            >>> expected_text = "シフト情報\\n- 2025-04-02 17:00 ~ 2025-04-02 21:30\\n- 2025-04-04 17:00 ~ 2025-04-04 21:00"
             >>>
             >>> # 正しい引数で呼ばれたかを確認
             >>> mock_post.assert_called_with(channel="C222", thread_ts="1648825135.123", text=expected_text)
@@ -278,7 +289,17 @@ class SlackClient:
         timestamp = file.timestamp
         result_text = "シフト情報"
         for shift in shifts:
-            tmp = "\n- " + shift.start_datetime + " ~ " + shift.end_datetime
+            shift_dict = shift.to_dict()
+            tmp = (
+                "\n・ "
+                + shift_dict["start_datetime"][:10]
+                + " "
+                + shift_dict["start_datetime"][11:16]
+                + " ~ "
+                + shift_dict["end_datetime"][:10]
+                + " "
+                + shift_dict["end_datetime"][11:16]
+            )
             result_text += tmp
         self._app.client.chat_postMessage(
             channel=channel, thread_ts=timestamp, text=result_text
