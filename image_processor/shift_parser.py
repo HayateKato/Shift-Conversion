@@ -1158,15 +1158,12 @@ class ShiftParser:
         for cc in cleaned_context:
             match = pattern.search(cc)
             if match:
-                # マッチした各グループを抽出
+                # 一致したグループを抽出
                 date, start_hour, start_min, next_day, end_hour, end_min = (
                     match.groups()
                 )
                 start_time = f"{start_hour}:{start_min}"
-                two_days = False
-                # 「翌日」の文字がある場合
-                if next_day:
-                    two_days = True
+                two_days = True if next_day else False  # 「翌日」が含まれる場合はフラグを立てる
                 end_time = f"{end_hour}:{end_min}"
                 result_context.append([date, two_days, start_time, end_time])
 
