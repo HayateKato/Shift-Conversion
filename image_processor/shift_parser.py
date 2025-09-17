@@ -636,17 +636,25 @@ class ShiftParser:
             cleaned_rc = re.sub(r"[I|]", "", rc)
             cleaned_context.append(cleaned_rc)
 
-        # current_patternに一致する文字列をreplace_patternの形式に変換
-        current_pattern = r"(\d{1,2}/\d{1,2}).(\d{2,3})時(\d{2})分(\d{1,2})時(\d{2})分"
-        replace_pattern = r"\1,\2:\3,\4:\5"
+        # patternに一致する文字列を探す
+        pattern = re.compile(
+            r"(\d{1,2}/\d{1,2})[月火水木金土日](\d{1,3})時(\d{2})分(翌日)?(\d{1,3})時(\d{2})分"
+        )
         result_context = list()
         for cc in cleaned_context:
-            text = re.sub(current_pattern, replace_pattern, cc)
-            splited_text = text.split(",")
-            result_line = list()
-            for st in splited_text:
-                result_line.append(st)
-            result_context.append(result_line)
+            match = pattern.search(cc)
+            if match:
+                # マッチした各グループを抽出
+                date, start_hour, start_min, next_day, end_hour, end_min = (
+                    match.groups()
+                )
+                start_time = f"{start_hour}:{start_min}"
+                two_days = False
+                # 「翌日」の文字がある場合
+                if next_day:
+                    two_days = True
+                end_time = f"{end_hour}:{end_min}"
+                result_context.append([date, two_days, start_time, end_time])
 
         # シフトデータの作成
         summary = "バイト"  # summaryは固定
@@ -656,8 +664,9 @@ class ShiftParser:
         shifts = list()
         for rc in result_context:
             date = rc[0].split("/")  # 月と日に分ける
-            start_time = rc[1].split(":")  # 時と分に分ける
-            end_time = rc[2].split(":")
+            two_days = rc[1]  # 日を跨ぐか
+            start_time = rc[2].split(":")  # 時と分に分ける
+            end_time = rc[3].split(":")
 
             # 時間が3桁になっている場合は2桁にする(例:117->17)
             if len(start_time[0]) >= 3:
@@ -686,10 +695,15 @@ class ShiftParser:
                 + time_difference
             )
 
+            day = int(date[1])
+            # 日を跨ぐ場合は終了日を(開始日+1)にする
+            if two_days:
+                day += 1
+
             end_datetime = datetime(
                 year=year,
                 month=int(date[0]),
-                day=int(date[1]),
+                day=day,
                 hour=int(end_time[0]),
                 minute=int(end_time[1]),
             )
