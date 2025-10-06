@@ -2,7 +2,7 @@
 
 from dotenv import load_dotenv
 import os
-load_dotenv("/Users/hayatekato/work/shift/.env")
+load_dotenv("/shift/.env")
 from google.cloud import vision
 import json
 from google.oauth2 import service_account
