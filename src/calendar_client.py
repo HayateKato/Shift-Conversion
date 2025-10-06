@@ -2,7 +2,7 @@
 
 from dotenv import load_dotenv
 import os
-load_dotenv("/shift/.env")
+load_dotenv("/src/.env")
 from google.oauth2 import service_account
 import googleapiclient.discovery
 
