@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y git
 
 # pythonライブラリをインストール
 RUN pip install --upgrade pip
-COPY requirements.txt /shift/requirements.txt
-RUN pip install -r /shift/requirements.txt
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
-# コンテナ内のデフォルトディレクトリをshiftディレクトリに指定
-WORKDIR /shift
+# コンテナ内のデフォルトディレクトリをsrcディレクトリに指定
+WORKDIR /src
 
 # ファイルをデフォルトディレクトリにコピー
-COPY . /shift
+COPY ./src /src
 
 # コンテナ起動時にmain.pyを実行
 CMD ["python", "main.py"]

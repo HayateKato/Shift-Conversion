@@ -3,7 +3,6 @@ services:
       build: .
       container_name: shift
       volumes:
-        - .:/shift
-      working_dir: /shift
+        - ./src:/src
       env_file:
-        - .env
+        - ./src/.env

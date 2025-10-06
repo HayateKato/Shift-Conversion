@@ -6,10 +6,10 @@ venv/
 *.mo
 *.pot
 *.log
-result/*
+src/result/*
 parameters.json
 .python-version
 .DS_Store
 .env
 data/
-api_key/
+src/api_key/
