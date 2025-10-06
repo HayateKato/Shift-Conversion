@@ -21,7 +21,7 @@ def main() -> None:
 
     # 結果出力用ファイルの作成
     result_dir = f'result/{params.run_date}'  # 結果出力ディレクトリ
-    os.mkdir(result_dir)  # 実行日時を名前とするディレクトリを作成
+    os.makedirs(result_dir)  # 実行日時を名前とするディレクトリを作成
     dump_params(params, f'{result_dir}')  # パラメータを出力
 
     # ログ設定
