@@ -1,8 +1,7 @@
 # Shift Conversion
 
-バイトのシフト予定を自動でGoogleカレンダーに追加するアプリケーションを作成するプロジェクトです．
-以下，Notionの記事です．
-https://gregarious-lumber-950.notion.site/259c7af0e3de80599b61e9cdb2746603?source=copy_link
+- バイトのシフト予定を自動でGoogleカレンダーに追加するアプリケーションを作成するプロジェクトです．
+- Notion記事(https://gregarious-lumber-950.notion.site/259c7af0e3de80599b61e9cdb2746603?source=copy_link)
 
 
 ## Requirement
