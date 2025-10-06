@@ -3,7 +3,7 @@
 from dotenv import load_dotenv
 import os
 
-load_dotenv("/Users/hayatekato/work/shift/.env")
+load_dotenv("/shift/.env")
 import requests
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
