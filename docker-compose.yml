@@ -1,0 +1,9 @@
+services:
+  shift:
+      build: .
+      container_name: shift
+      volumes:
+        - .:/shift
+      working_dir: /shift
+      env_file:
+        - .env
