@@ -1,40 +1,25 @@
 import os
-import argparse
-from config import common_args, Parameters
-from utils import dump_params, setup_params
-from utils import set_logging
+from datetime import datetime
+import shutil
 import logging
 
-from controller import Controller
+from src.utils import set_logging
+from src.controller import Controller
 
 
-def main() -> None:
-
-    # コマンドライン引数の設定
-    parser = argparse.ArgumentParser()
-    parser = common_args(parser)  # コマンドライン引数引数を読み込み
-    # parser.add_argument("--main")
-    # # 実行スクリプト固有のコマンドライン引数があればここに記入する．
-    args = parser.parse_args()
-    params = Parameters(**setup_params(vars(args), args.parameters))
-    # args，run_date，git_revisionなどを追加した辞書を取得
-
+def main(image_file_path: str) -> None:
     # 結果出力用ファイルの作成
-    result_dir = f'result/{params.run_date}'  # 結果出力ディレクトリ
-    os.makedirs(result_dir)  # 実行日時を名前とするディレクトリを作成
-    dump_params(params, f'{result_dir}')  # パラメータを出力
+    now_str = datetime.now().strftime("%Y%m%d%H%M%S")
+    result_dir = f"src/result/{now_str}"
+    os.makedirs(result_dir)
 
     # ログ設定
     logger = logging.getLogger(__name__)
-    set_logging(result_dir)  # ログを標準出力とファイルに出力するよう設定
+    set_logging(result_dir)
 
-    # 使用例
-    logger.info('parameters: ')
-    logger.info(params)
-    logger.info(params.param1)  # params変数は各パラメータにドットアクセスが可能．
-    logger.info(params.args['arg1'])  # コマンドライン引数はargs['']でアクセス．
+    # Django上でアップロードされた画像をresult_dirにコピー
+    shutil.copy(image_file_path, f"{result_dir}/shift.jpg")
 
-    # do something...
     controller = Controller(result_dir=result_dir)
     controller.run()
 

@@ -2,7 +2,8 @@
 
 from dotenv import load_dotenv
 import os
-load_dotenv("/src/.env")
+
+load_dotenv("src/.env")
 from google.cloud import vision
 import json
 from google.oauth2 import service_account
