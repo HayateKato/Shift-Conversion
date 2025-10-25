@@ -4,6 +4,7 @@ import logging
 
 from src.image_processor.image_processor import ImageProcessor
 from src.calendar_client import CalendarClient
+from src.dataclass.shift import Shift
 
 
 class Controller:
@@ -19,12 +20,12 @@ class Controller:
         self._calendar_client = CalendarClient()
         self.result_dir = result_dir
 
-    def run(self) -> None:
+    def run(self) -> list[Shift]:
         """アプリケーションを起動するメソッド
         Args:
             None
         Returns:
-            None
+            list[Shift]: シフトデータ
         Notes:
             doctest対象外
         """
@@ -43,3 +44,5 @@ class Controller:
         logger.debug("Googleカレンダーへの予定の追加が完了しました。")
 
         logger.debug("バックグラウンド処理が完了しました。")
+
+        return shifts
