@@ -11,9 +11,7 @@ def upload(request):
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-
-        form = ImageForm()
-        success_message = "画像をアップロードしました。"
+            return redirect("shift_app:processing")
 
     # ページが初めて開かれた時(request.method == "GET")
     else:
@@ -21,7 +19,9 @@ def upload(request):
 
     context = {
         "form": form,
-        "success_message": success_message,
         }
 
     return render(request, "shift_app/upload.html", context)
+
+def processing(request):
+    return render(request, "shift_app/processing.html")
