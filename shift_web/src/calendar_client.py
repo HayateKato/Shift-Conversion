@@ -2,11 +2,12 @@
 
 from dotenv import load_dotenv
 import os
-load_dotenv("/src/.env")
+
+load_dotenv("src/.env")
 from google.oauth2 import service_account
 import googleapiclient.discovery
 
-from dataclass.shift import Shift
+from src.dataclass.shift import Shift
 
 from unittest.mock import MagicMock, patch
 

@@ -1,8 +1,8 @@
 """画像処理とシフトデータの作成を行うモジュール"""
 
-from image_processor.vision_client import VisionClient
-from image_processor.shift_parser import ShiftParser
-from dataclass.shift import Shift
+from src.image_processor.vision_client import VisionClient
+from src.image_processor.shift_parser import ShiftParser
+from src.dataclass.shift import Shift
 
 from unittest.mock import MagicMock, patch
 

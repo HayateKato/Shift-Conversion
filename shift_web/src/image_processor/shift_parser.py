@@ -4,7 +4,7 @@ import json
 import re
 from datetime import datetime
 
-from dataclass.shift import Shift
+from src.dataclass.shift import Shift
 
 from unittest.mock import MagicMock, patch
 
@@ -1163,7 +1163,9 @@ class ShiftParser:
                     match.groups()
                 )
                 start_time = f"{start_hour}:{start_min}"
-                two_days = True if next_day else False  # 「翌日」が含まれる場合はフラグを立てる
+                two_days = (
+                    True if next_day else False
+                )  # 「翌日」が含まれる場合はフラグを立てる
                 end_time = f"{end_hour}:{end_min}"
                 result_context.append([date, two_days, start_time, end_time])
 
